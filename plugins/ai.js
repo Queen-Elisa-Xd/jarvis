@@ -9,156 +9,23 @@ Jarvis - Loki-Xer
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-const { System, isPrivate, interactWithAi, makeUrl, gemini, config } = require("../lib/");
-const { IronMan, getJson, postJson } = require('./client/');
+const { System, isPrivate, copilot, gemini, chatgpt } = require("../lib/");
+const { elevenlabs } = require("./client/");
 
 System({
-    pattern: "thinkany", 
+    pattern: "copilot", 
     fromMe: isPrivate,
-    desc: "ai thinkany", 
+    desc: "ai copilot", 
     type: "ai",
 }, async (m, match) => {
-    match = match || m.reply_message.text;
-    if(match && m.quoted) match = match + m.reply_message.text;
-    if(!match) return m.reply("_*need query !!*_\n_*eg: .thinkany who is iron man*_");
-    const { result } = await interactWithAi("thinkany", match);
-    await m.send(result, { contextInfo: { forwardingScore: 1, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363197401188542@newsletter', newsletterName: 'ᴛʜɪɴᴋᴀɴʏ ᴀɪ' }}});
+   match = match || m.reply_message?.text;
+   if(match && m.quoted) match += "\n" + m.reply_message.text;
+   if(!match) return m.reply("_*need query !!*_\n_*eg: .copilot create a simple html page*_");
+   let session = m.quoted && m.store.copilot.has(m.reply_message.id) ? m.store.copilot.get(m.reply_message.id) : copilot.generateNewSession();
+   const res = await copilot.chat(session, match);
+   const msg = await m.send(res.text, { contextInfo: { forwardingScore: 1, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: "120363197401188542@newsletter", newsletterName: "copilot" }}});
+   m.store.copilot.set(msg.key.id, session);
 });
-
-System({
-    pattern: "aoyo", 
-    fromMe: isPrivate,
-    desc: "ai aoyo", 
-    type: "ai",
-}, async (m, match) => {
-    match = match || m.reply_message.text;
-    if(match && m.quoted) match = match + m.reply_message.text;
-    if(!match) return m.reply("_*need query !!*_\n_*eg: .aoyo who is iron man*_");
-    const { result } = await interactWithAi("aoyo", match);
-    await m.send(result, { contextInfo: { forwardingScore: 1, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363197401188542@newsletter', newsletterName: 'ᴀᴏʏᴏ ᴀɪ' }}});
-});
-
-System({
-    pattern: "prodia", 
-    fromMe: isPrivate,
-    desc: "prodia image gen ai", 
-    type: "ai",
-}, async (m, match) => {
-    match = match || m.reply_message.text;
-    if(match && m.quoted) match = match + m.reply_message.text;
-    if(!match) return m.reply("_*need query !!*_\n_*eg: .prodia a girl in full moon*_");
-    await m.reply("*please wait generating*");
-    const img = await interactWithAi("prodia", match);
-    await m.sendFromUrl(img, { contextInfo: { forwardingScore: 1, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363197401188542@newsletter', newsletterName: 'ᴩʀᴏᴅɪᴀ ᴀɪ' }}});
-});
-
-
-System({
-    pattern: "dalle", 
-    fromMe: isPrivate,
-    desc: "dalle image gen ai", 
-    type: "ai",
-}, async (m, match) => {
-    match = match || m.reply_message.text;
-    if(match && m.quoted) match = match + m.reply_message.text;
-    if(!match) return m.reply("_*need query !!*_\n_*eg: .dalle a girl in full moon*_");
-    await m.reply("*please wait generating*");
-    const img = await interactWithAi("dalle", match);
-    await m.sendFromUrl(img, { contextInfo: { forwardingScore: 1, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363197401188542@newsletter', newsletterName: 'ᴅᴀʟʟᴇ ᴀɪ' }}});
-});
-
-
-System({
-    pattern: "lepton", 
-    fromMe: isPrivate,
-    desc: "ai lepton", 
-    type: "ai",
-}, async (m, match) => {
-    match = match || m.reply_message.text;
-    if(match && m.quoted) match = match + m.reply_message.text;
-    if(!match) return m.reply("_*need query !!*_\n_*eg: .lepton who is iron man*_");
-    const { result } = await interactWithAi("lepton", match);
-    await m.send(result.replace(/\[[^\]]*\]|\([^)]*\)|<[^>]*>/g, ''), { contextInfo: { forwardingScore: 1, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363197401188542@newsletter', newsletterName: 'ʟᴇᴩᴛᴏɴ ᴀɪ' }}});
-});
-
-System({
-    pattern: "gpt", 
-    fromMe: isPrivate,
-    desc: "ai chatgpt", 
-    type: "ai",
-}, async (m, match) => {
-    match = match || m.reply_message.text;
-    if(match && m.quoted) match = match + m.reply_message.text;
-    if(!match) return m.reply("_*need query !!*_\n_*eg: .chatgpt who is iron man*_");
-    const { response } = await interactWithAi("gpt", match);
-    await m.send(response, { contextInfo: { forwardingScore: 1, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363197401188542@newsletter', newsletterName: 'ᴄʜᴀᴛɢᴩᴛ 4' }}});
-});
-
-System({
-    pattern: "bb", 
-    fromMe: isPrivate,
-    desc: "blackbox ai", 
-    type: "ai",
-}, async (m, match) => {
-       match = match || m.reply_message.text;
-       if(match && m.quoted) match = match + m.reply_message.text;
-       if(!match) return m.reply("_*need query !!*_\n_*eg: .bb who is iron man*_");
-       const { result } = await interactWithAi("blackbox", match);
-       await m.send(result, { contextInfo: { forwardingScore: 1, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363197401188542@newsletter', newsletterName: 'ʙʟᴀᴄᴋ ʙᴏx' }}});
-});
-
-System({
-    pattern: "chatgpt", 
-    fromMe: isPrivate,
-    desc: "ai chatgpt", 
-    type: "ai",
-}, async (m, match) => {
-    match = match || m.reply_message.text;
-    if(match && m.quoted) match = match + m.reply_message.text;
-    if(!match) return m.reply("_*need query !!*_\n_*eg: .chatgpt who is iron man*_");
-    const response = await interactWithAi("chatgpt", match);
-    await m.send(response, { contextInfo: { forwardingScore: 1, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363197401188542@newsletter', newsletterName: 'ᴄʜᴀᴛɢᴩᴛ' }}});
-});
-
-System({
-    pattern: 'upscale',
-    fromMe: isPrivate,
-    desc: 'Enhance images with AI',
-    type: 'ai',
-}, async (message, match) => {
-    if (!message.quoted || !message.reply_message.image) return await message.send("Reply to an image baka!");
-    const img = await message.reply_message.downloadAndSave();
-    const upscale = await interactWithAi("upscale", img);
-    await message.send(upscale, { caption: "_*upscaled 🍉*_" }, "img");
-});
-
-System({
-	pattern: 'ocr',
-	fromMe: isPrivate,
-	desc: 'Text Recognition from image',
-	type: 'ai',
-}, async (message, match) => {
-    if(!message.reply_message.image) return await message.reply("_Reply to a image_");
-    const data = await makeUrl(await message.reply_message.downloadAndSaveMedia());
-    const res = await fetch(IronMan(`ironman/ai/ocr?url=${data}`));
-    if (res.status !== 200) return await message.reply('*Error*');
-    const text = await res.json()
-    if (!text.text) return await message.reply('*Not found*');
-    await message.reply(`\`\`\`${text.text}\`\`\``);
-});
-
-System({
-  pattern: 'detectai',
-  fromMe: isPrivate,
-  desc: 'Detects AI-generated text',
-  type: 'ai',
-}, async (message, match) => {
-  const text = message.reply_message.text || match;
-  const data = await getJson(IronMan(`ironman/ai/detectai?text=${encodeURIComponent(text)}`));
-  let output = "*𝙰𝙸 𝙳𝙴𝚃𝙴𝙲𝚃𝙸𝙾𝙽*\n\n" + data.slice(0, 3).map((item, i) => `*тєχт:* ${item.text}\n*ѕ¢σяє:* ${(item.score * 100).toFixed(2)}%\n*туρє:* ${item.type}\n\n` + (i === 2 && data.length > 3 ? `_+${data.length - 3} more results_` : '')).join('');
-  await message.reply(output.trim());
-});
-
 
 System({
    pattern: 'gemini',
@@ -171,4 +38,19 @@ System({
   const path = message.quoted && message.reply_message?.image ? await message.reply_message.downloadAndSaveMedia() : null;
   const res = await gemini(match, path);
   await message.send(res, { contextInfo: { forwardingScore: 1, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: '120363197401188542@newsletter', newsletterName: 'ɢᴇᴍɪɴɪ ᴀɪ' } } });
+});
+
+System({
+    pattern: "aitts",
+    fromMe: isPrivate,
+    desc: 'generate ai voices',
+    type: "ai"
+}, async (message, match) => {
+   if (match == 'list') 
+   return await message.send(` *List of Aitts*\n\n 1 _rachel_ \n 2 _clyde_ \n 3 _domi_ \n 4 _dave_ \n 5 _fin_ \n 6 _bella_ \n 7 _antoni_ \n 8 _thomas_ \n 9 _charlie_ \n 10 _emily_ \n 11 _elli_ \n 12 _callum_ \n 13 _patrick_ \n 14 _harry_ \n 15 _liam_ \n 16 _dorothy_ \n 17 _josh_ \n 18 _arnold_ \n 19 _charlotte_ \n 20 _matilda_ \n 21 _matthew_ \n 22 _james_ \n 23 _joseph_ \n 24 _jeremy_ \n 25 _michael_ \n 26 _ethan_ \n 27 _gigi_ \n 28 _freya_ \n 29 _grace_ \n 30 _daniel_ \n 31 _serena_ \n 32 _adam_ \n 33 _nicole_ \n 34 _jessie_ \n 35 _ryan_ \n 36 _sam_ \n 37 _glinda_ \n 38 _giovanni_ \n 39 _mimi_ \n`.replace(/├/g, ''));
+   const [v, k] = match.split(/,;|/);
+   if (!k && !v) return await message.send(`*_need voice id and text_*\n_example_\n\n_*aitts* hey vroh its a test,adam_\n_*aitts list*_`)
+   const stream = await elevenlabs(match)
+   if (!stream) return await message.send(`_*please upgrade your api key*_\n_get key from http://docs.elevenlabs.io/api-reference/quick-start/introduction_\n_example_\n\nsetvar elvenlabs: your key\n_or update your config.js manually_`);
+   return await message.send({ stream }, { mimetype: 'audio/mpeg' }, 'audio');
 });
